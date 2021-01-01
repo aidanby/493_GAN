@@ -27,6 +27,7 @@ import os
 import shutil
 import struct
 import urllib
+from urllib import request
 
 import numpy as np
 import tensorflow as tf
@@ -50,7 +51,16 @@ def download_one_file(download_url,
         print('%s already exists' % local_dest)
     else:
         print('Downloading %s' % download_url)
-        local_file, _ = urllib.request.urlretrieve(download_url, local_dest)
+        request = urllib.request(download_url)
+        request.add_header('User-Agent', ' Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0')
+        opener = urllib.build_opener()
+        data = opener.open(request).read()
+
+        writefile = open(local_dest,'w')
+        writefile.write(data)
+        writefile.close()
+
+        #local_file, _ = urllib.request.urlretrieve(download_url, local_dest,  headers={'User-Agent':' Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0'})
         file_stat = os.stat(local_dest)
         if expected_byte:
             if file_stat.st_size == expected_byte:

@@ -8,7 +8,10 @@ from tensorflow.keras.layers import Dense, BatchNormalization, \
 import utils
 import numpy as np
 
-alpha_num, trial_number, version_num, seed_num = input("Alpha, trial number, version, seed: ").split()
+
+
+alpha_num, trial_number, version_num, seed_num = [1, 1, 1, 123]
+#alpha_num, trial_number, version_num, seed_num = input("Alpha, trial number, version, seed: ").split()
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 np.random.seed(int(seed_num))
 tf.random.set_random_seed(int(seed_num))
@@ -39,14 +42,38 @@ class GAN(object):
 
     def get_data(self):
         with tf.name_scope('data'):
-            train_data, test_data = utils.get_mnist_dataset(self.batch_size)
+
+            
+            # Step 1: Read in data, normalizr and batch
+            (train_data,_), (test_data,_) = tf.keras.datasets.mnist.load_data()
+            train_data = (train_data - 127.5)/127.5
+            train_data = tf.data.Dataset.from_tensor_slices(train_data)
+            train_data = train_data.shuffle(60000)  # if you want to shuffle your data
+            train_data = train_data.batch(self.batch_size)
+            test_data = (test_data - 127.5)/127.5
+            test_data =  tf.data.Dataset.from_tensor_slices(test_data)
+            test_data = test_data.batch(self.batch_size)
+
             self.iterator = tf.data.Iterator.from_structure(train_data.output_types,
                                                             train_data.output_shapes)
-            img, _ = self.iterator.get_next()
+            
+            img = self.iterator.get_next()
             self.img = tf.reshape(img, shape=[-1, 28, 28, 1])
 
             self.train_init = self.iterator.make_initializer(train_data)
             self.test_init = self.iterator.make_initializer(test_data)
+
+           
+
+            
+        #     train_data, test_data = utils.get_mnist_dataset(self.batch_size)
+        #     self.iterator = tf.data.Iterator.from_structure(train_data.output_types,
+        #                                                     train_data.output_shapes)
+        #     img, _ = self.iterator.get_next()
+        #     self.img = tf.reshape(img, shape=[-1, 28, 28, 1])
+
+        #     self.train_init = self.iterator.make_initializer(train_data)
+        #     self.test_init = self.iterator.make_initializer(test_data)
 
     def build_generator(self):
         with tf.name_scope('generator') as scope:
@@ -181,7 +208,7 @@ class GAN(object):
         self.discriminator = self.build_discriminator()
         self.fake_output_images = self.generator(tf.random.normal([self.batch_size, self.noise_dim]))
         self.fake_output = self.discriminator(self.fake_output_images)
-        self.real_output = self.discriminator(self.img)
+        self.real_output = self.discriminator(tf.cast(self.img, dtype=tf.float32)) # discriminator's domain is [0, 1]
         if self.alpha != 1.0:
             if self.version == 1 or self.version == 3:
                 print("RenyiGAN no L1 normalization")
@@ -260,4 +287,4 @@ class GAN(object):
 
 model = GAN(round(float(alpha_num), 1), int(trial_number), int(version_num))
 model.build()
-model.train(n_epochs=250)
+model.train(n_epochs=10)
