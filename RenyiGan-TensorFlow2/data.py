@@ -55,6 +55,7 @@ def get_new_state(new_msg, last_state):
     new_msg, on_ = msg2dict(str(new_msg))
     new_state = switch_note(last_state, note=new_msg['note'], velocity=new_msg['velocity'], on_=on_) if on_ is not None else last_state
     return [new_state, new_msg['time']]
+
 def track2seq(track):
     # piano has 88 notes, corresponding to note id 21 to 108, any note out of the id range will be ignored
     result = []
@@ -66,13 +67,47 @@ def track2seq(track):
         last_state, last_time = new_state, new_time
     return result
 
+def arry2mid(ary, tempo=500000):
+    # get the difference
+    new_ary = np.concatenate([np.array([[0] * 88]), np.array(ary)], axis=0)
+    changes = new_ary[1:] - new_ary[:-1]
+    # create a midi file with an empty track
+    mid_new = mido.MidiFile()
+    track = mido.MidiTrack()
+    mid_new.tracks.append(track)
+    track.append(mido.MetaMessage('set_tempo', tempo=tempo, time=0))
+    # add difference in the empty track
+    last_time = 0
+    for ch in changes:
+        if set(ch) == {0}:  # no change
+            last_time += 1
+        else:
+            on_notes = np.where(ch > 0)[0]
+            on_notes_vol = ch[on_notes]
+            off_notes = np.where(ch < 0)[0]
+            first_ = True
+            for n, v in zip(on_notes, on_notes_vol):
+                new_time = last_time if first_ else 0
+                track.append(mido.Message('note_on', note=n + 21, velocity=v, time=new_time))
+                first_ = False
+            for n in off_notes:
+                new_time = last_time if first_ else 0
+                track.append(mido.Message('note_off', note=n + 21, velocity=0, time=new_time))
+                first_ = False
+            last_time = 0
+    return mid_new
+
 def read_midi():
     mid = mido.MidiFile('test.mid', clip=True)
     result_array = mid2arry(mid)
     plt.plot(range(result_array.shape[0]), np.multiply(np.where(result_array > 0, 1, 0), range(1, 89)), marker='.',
              markersize=1, linestyle='')
     plt.title("test.mid")
-    plt.show()
+    #plt.show()
+    mid_new = arry2mid(result_array, 545455)
+    mid_new.save('mid_new.mid')
+
+
 
 
 def load_mnist():
