@@ -111,10 +111,10 @@ def read_midi():
                 mid = mido.MidiFile(path, clip=True)
                 result_array = mid2arry(mid)
 
-                if np.shape(result_array)[0] < 10000:
+                if np.shape(result_array)[0] < 16:
                     continue
                     
-                result_array = result_array[0:10000, :]
+                result_array = result_array[0:16, :]
 
                 np.savetxt(destdir + '\\' + str(idx) + '.csv', result_array, delimiter=",")
                 idx += 1
