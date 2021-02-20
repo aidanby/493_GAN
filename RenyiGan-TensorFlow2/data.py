@@ -1,6 +1,6 @@
 # Loads and does prepossing on the desired training set 
 
-import tensorflow as tf
+#import tensorflow as tf
 import mido
 import string
 import numpy as np
@@ -107,20 +107,27 @@ def read_midi():
             ext = os.path.splitext(file)[-1].lower()
             if ext in extension:
                 path = os.path.join(subdir, file)
-                #print(path)
+                # print(path)
                 mid = mido.MidiFile(path, clip=True)
                 result_array = mid2arry(mid)
 
-                if np.shape(result_array)[0] < 16:
+                if np.shape(result_array)[0] < 64:
                     continue
-                    
-                result_array = result_array[0:16, :]
 
-                np.savetxt(destdir + '\\' + str(idx) + '.csv', result_array, delimiter=",")
-                idx += 1
+                result_array = result_array[0:64, :]
+
+                split_arrays = np.array_split(result_array, 4)
+                ar_count = 0
+                for arr in split_arrays:
+                    # print(np.shape(arr))
+                    if ar_count > 4:
+                        break
+                    ar_count += 1
+                    np.savetxt(destdir + '\\' + str(idx) + '.csv', arr, delimiter=",")
+                    idx += 1
 
                 # Legacy code
-                print(np.shape(result_array))
+                # print(np.shape(result_array))
                 # plt.plot(range(result_array.shape[0]), np.multiply(np.where(result_array > 0, 1, 0), range(1, 89)), marker='.',
                 #          markersize=1, linestyle='')
                 # plt.title("test.mid")
@@ -134,17 +141,17 @@ def read_midi():
 
 
 def load_mnist():
-    (train_images, _), (_, _) = tf.keras.datasets.mnist.load_data()
+    # (train_images, _), (_, _) = tf.keras.datasets.mnist.load_data()
 
-    train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
-    train_images = (train_images - 127.5) / 127.5 # Normalize the images to [-1, 1]
+    # train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
+    # train_images = (train_images - 127.5) / 127.5 # Normalize the images to [-1, 1]
 
     BUFFER_SIZE = 60000
     BATCH_SIZE = 256
 
     # Batch and shuffle the data
-    train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
-    return train_dataset
+    # train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+    # return train_dataset
 
 if __name__ == '__main__':
     read_midi()
