@@ -2,9 +2,11 @@
 
 import tensorflow as tf
 
+
 def generator_loss_original(fake_output):
     cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     return cross_entropy(tf.ones_like(fake_output), fake_output)
+
 
 def discriminator_loss_original(real_output, fake_output):
     cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
@@ -13,10 +15,20 @@ def discriminator_loss_original(real_output, fake_output):
     total_loss = real_loss + fake_loss
     return total_loss
 
-#def generator_loss_renyi():
 
-  #  return loss
+def generator_loss_renyi(fake_output, alpha):
+    f = tf.math.reduce_mean(tf.math.pow(1 - fake_output,
+                                        (alpha - 1) * tf.ones_like(fake_output)))
+    loss = 1.0 / (alpha - 1) * tf.math.log(f)
+    return loss
 
-#def discriminator_loss_renyi():
 
-   # return loss
+def discriminator_loss_renyi(real_output, fake_output, alpha):
+    f = (tf.math.pow(real_output, alpha) *
+         tf.math.pow(fake_output, (1 - alpha))) + \
+        tf.math.pow((1 - real_output), alpha) * \
+        tf.math.pow((1 - fake_output), (1 - alpha)) / \
+        (tf.math.pow(real_output, alpha) *
+         tf.math.pow((1 - self.real_output), self.alpha))
+    loss = tf.math.reduce_mean(1.0 / (self.alpha - 1) * tf.math.log(f))
+    return loss
