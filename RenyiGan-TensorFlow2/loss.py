@@ -12,3 +12,11 @@ def discriminator_loss_original(real_output, fake_output):
     fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
     total_loss = real_loss + fake_loss
     return total_loss
+
+#def generator_loss_renyi():
+
+  #  return loss
+
+#def discriminator_loss_renyi():
+
+   # return loss
