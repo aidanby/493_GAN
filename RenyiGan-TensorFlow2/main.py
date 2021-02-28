@@ -10,7 +10,7 @@ from model import get_generator, get_discriminator
 
 
 BUFFER_SIZE = 60000
-BATCH_SIZE = 256
+BATCH_SIZE = 100
 EPOCHS = 50
 
 
@@ -18,8 +18,9 @@ noise_dim = 100
 num_examples_to_generate = 16
 seed = tf.random.normal([num_examples_to_generate, noise_dim])
 
-dataset = data.load_mnist()
+dataset = data.load_mnist(BUFFER_SIZE, BATCH_SIZE)
 generator = get_generator()
+tf.keras.utils.plot_model(generator, to_file="Generator.png", show_shapes=True)
 discriminator = get_discriminator()
 generator_optimizer = tf.keras.optimizers.Adam(1e-4)
 discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
