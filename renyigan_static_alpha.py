@@ -17,8 +17,8 @@ tf.random.set_random_seed(int(seed_num))
 class GAN(object):
     def __init__(self, alpha, trial_num, version):
         self.batch_size = 100
-        self.n_classes = 10
-        self.buffer_size = 50000
+        self.n_classes = 100
+        self.buffer_size = 10000
         self.training = True
         self.alpha = alpha
         self.version = version
@@ -39,14 +39,17 @@ class GAN(object):
 
     def get_data(self):
         with tf.name_scope('data'):
-            train_data, test_data = utils.get_mnist_dataset(self.batch_size)
+            (train_d, _), _ = tf.keras.datasets.mnist.load_data()
+            train_data = (train_d - 127.5) / 127.5
+            train_data = tf.data.Dataset.from_tensor_slices(train_data)
+            train_data = train_data.shuffle(60000)
+            train_data = train_data.batch(self.batch_size)
             self.iterator = tf.data.Iterator.from_structure(train_data.output_types,
                                                             train_data.output_shapes)
-            img, _ = self.iterator.get_next()
+            img = self.iterator.get_next()
             self.img = tf.reshape(img, shape=[-1, 28, 28, 1])
 
             self.train_init = self.iterator.make_initializer(train_data)
-            self.test_init = self.iterator.make_initializer(test_data)
 
     def build_generator(self):
         with tf.name_scope('generator') as scope:
@@ -120,7 +123,7 @@ class GAN(object):
 
             gradients = tf.gradients(-tf.math.log(1 /self.real_output - 1), [self.img])[0]
             r1_penalty = tf.reduce_mean(tf.reduce_sum(tf.square(gradients), axis=[1,2,3]))
-            dis_loss = real_loss + fake_loss  + 5 * r1_penalty
+            dis_loss = tf.cast(real_loss, dtype=tf.float32) + tf.cast(fake_loss, dtype=tf.float32)  + 5 *(tf.cast(r1_penalty, dtype=tf.float32))
 
             return dis_loss
 
@@ -133,7 +136,7 @@ class GAN(object):
             f = tf.math.reduce_mean(tf.math.pow(1 - self.fake_output,
                                                 (self.alpha - 1) * tf.ones_like(self.fake_output)))
             gen_loss = 1.0 / (self.alpha - 1) * tf.math.log(f + self.epsilon) + tf.math.log(2.0)
-            dis_loss = - real_loss - gen_loss
+            dis_loss = -tf.cast(real_loss, dtype=tf.float32) -tf.cast(gen_loss, dtype=tf.float32) 
             return dis_loss
 
     # Vanilla DCGAN generator l1 loss function
@@ -194,7 +197,7 @@ class GAN(object):
         self.discriminator = self.build_discriminator()
         self.fake_output_images = self.generator(tf.random.normal([self.batch_size, self.noise_dim]))
         self.fake_output = self.discriminator(self.fake_output_images)
-        self.real_output = self.discriminator(self.img)
+        self.real_output = self.discriminator(tf.cast(self.img, dtype=tf.float32))
         if self.alpha != 1.0:
             if self.version == 1 or self.version == 3:
                 print("RenyiGAN no L1 normalization")
@@ -229,6 +232,7 @@ class GAN(object):
                 total_loss_gen += genLoss
                 total_loss_dis += disLoss
                 n_batches += 1
+                print("NumBatches: " + str(n_batches))
         except tf.errors.OutOfRangeError:
             pass
         self.save_generated_images(sess, epoch)
@@ -242,9 +246,9 @@ class GAN(object):
         if len(self.predictions) > 0:
             self.predictions.pop(0)
         self.predictions.append(temp)
-        self._make_directory('data/renyigan' + str(self.alpha)
+        self._make_directory('data/renyigan' + str(self.alpha) + '/'
                 + 'v' + str(self.version) + '/trial' + str(self.trial_num) + '/alpha' + str(self.alpha))
-        np.save('data/renyigan' + str(self.alpha) + 'v' + str(self.version) + '/trial' + str(self.trial_num) + '/alpha'
+        np.save('data/renyigan' + str(self.alpha) + '/' + 'v' + str(self.version) + '/trial' + str(self.trial_num) + '/alpha'
                 + str(self.alpha) + '/predictions' + str(epoch), self.predictions)
 
     def train(self, n_epochs):
