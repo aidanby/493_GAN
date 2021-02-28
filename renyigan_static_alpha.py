@@ -168,6 +168,19 @@ class GAN(object):
             gen_loss = 1.0 / (self.alpha - 1) * tf.math.log(f + self.epsilon)
             return gen_loss
 
+    # RGAN Renyi generator loss function
+    def rgan_loss(self):
+        print("RGAN " + str(self.alpha))
+        with tf.name_scope('rganLoss'):
+            f = (tf.math.pow(self.real_output, self.alpha) *
+                                    tf.math.pow(self.fake_output, (1-self.alpha))) + \
+                                    tf.math.pow((1-self.real_output), self.alpha) * \
+                                    tf.math.pow((1 - self.fake_output), (1 - self.alpha)) / \
+                                    (tf.math.pow(self.real_output, self.alpha) *
+                                     tf.math.pow((1 - self.real_output), self.alpha))
+            gen_loss = tf.math.reduce_mean(1.0 / (self.alpha - 1) * tf.math.log(f + self.epsilon))
+            return gen_loss
+
     def optimize(self):
         self.gen_opt = tf.train.AdamOptimizer(2e-4, beta1=0.5, name="generator_optimizer")
         self.gen_opt_minimize = self.gen_opt.minimize(self.gen_loss_value, var_list=self.generator.trainable_variables)
@@ -229,7 +242,7 @@ class GAN(object):
         if len(self.predictions) > 0:
             self.predictions.pop(0)
         self.predictions.append(temp)
-        self._make_directory('data/renyigan' + str(self.alpha) 
+        self._make_directory('data/renyigan' + str(self.alpha)
                 + 'v' + str(self.version) + '/trial' + str(self.trial_num) + '/alpha' + str(self.alpha))
         np.save('data/renyigan' + str(self.alpha) + 'v' + str(self.version) + '/trial' + str(self.trial_num) + '/alpha'
                 + str(self.alpha) + '/predictions' + str(epoch), self.predictions)
