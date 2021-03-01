@@ -28,7 +28,7 @@ def discriminator_loss_renyi(real_output, fake_output, alpha):
          tf.math.pow(fake_output, (1 - alpha))) + \
         tf.math.pow((1 - real_output), alpha) * \
         tf.math.pow((1 - fake_output), (1 - alpha)) / \
-        (tf.math.pow(real_output, alpha) *
-         tf.math.pow((1 - self.real_output), self.alpha))
-    loss = tf.math.reduce_mean(1.0 / (self.alpha - 1) * tf.math.log(f))
+        (tf.math.pow(real_output, alpha) +
+         tf.math.pow((1 - real_output), alpha))
+    loss = tf.math.reduce_mean(1.0 / (alpha - 1) * tf.math.log(f))
     return loss
