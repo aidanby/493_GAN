@@ -17,18 +17,18 @@ def discriminator_loss_original(real_output, fake_output):
 
 
 def generator_loss_renyi(fake_output, alpha):
-    f = tf.math.reduce_mean(tf.math.pow(1 - fake_output,
-                                        (alpha - 1) * tf.ones_like(fake_output)))
-    loss = 1.0 / (alpha - 1) * tf.math.log(f)
+    f = tf.math.reduce_mean(tf.math.pow(1.0 - fake_output,
+                                        (alpha - 1.0) * tf.ones_like(fake_output)))
+    loss = 1.0 / (alpha - 1.0) * tf.math.log(f)
     return loss
 
 
 def discriminator_loss_renyi(real_output, fake_output, alpha):
-    f = (tf.math.pow(real_output, alpha) *
-         tf.math.pow(fake_output, (1 - alpha))) + \
-        tf.math.pow((1 - real_output), alpha) * \
-        tf.math.pow((1 - fake_output), (1 - alpha)) / \
+    f = (tf.math.pow(real_output, alpha) * \
+         tf.math.pow(fake_output, (1.0 - alpha)) + \
+        tf.math.pow((1.0 - real_output), alpha) * \
+        tf.math.pow((1.0 - fake_output), (1.0 - alpha))) / \
         (tf.math.pow(real_output, alpha) +
-         tf.math.pow((1 - real_output), alpha))
-    loss = tf.math.reduce_mean(1.0 / (alpha - 1) * tf.math.log(f))
+         tf.math.pow((1.0 - real_output), alpha))
+    loss = tf.math.reduce_mean(1.0 / (alpha - 1.0) * tf.math.log(f))
     return loss
