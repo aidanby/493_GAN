@@ -42,7 +42,7 @@ def train_step(images):
         real_out = discriminator(images, training=True)
         fake_out = discriminator(generated_images, training=True)
 
-        gen_loss = loss.generator_loss_renyi(fake_out, alpha=0.5)
+        gen_loss = loss.generator_loss_renyiL1(fake_out, alpha=0.5)
         disc_loss = loss.discriminator_loss_original(real_out,fake_out)
         # this is printing all the red numbers and will show 'nan' if broken
         tf.print(disc_loss, gen_loss)
