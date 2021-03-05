@@ -2,6 +2,10 @@
 
 import tensorflow as tf
 from tensorflow.keras import layers
+from tensorflow.keras.initializers import RandomNormal
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, BatchNormalization, \
+    LeakyReLU, Conv2DTranspose, Conv2D, Dropout, Flatten, Reshape
 
 def get_generator():
 
