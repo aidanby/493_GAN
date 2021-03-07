@@ -5,25 +5,35 @@ import matplotlib.pyplot as plt
 import time
 import data
 import loss
-from model import get_generator, get_discriminator
+from model import get_generator, get_discriminator, build_generator, build_discriminator
+
+
+
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
+# if tf.test.gpu_device_name():
+#     print('GPU found')
+# else:
+#     print("No GPU found")
 
 
 
 BUFFER_SIZE = 60000
-BATCH_SIZE = 100
+BATCH_SIZE = 1
 EPOCHS = 50
-
+alpha_g = 2
+alpha_d = 0.1
 #Change noise_dim to = 28*28 to use Himesh' gen/disc models
-noise_dim = 100
+noise_dim = 28*28
 num_examples_to_generate = 16
 seed = tf.random.normal([num_examples_to_generate, noise_dim])
 
 dataset = data.load_mnist(BUFFER_SIZE, BATCH_SIZE)
-generator = get_generator()
+generator = build_generator()
 tf.keras.utils.plot_model(generator, to_file="Generator.png", show_shapes=True)
-discriminator = get_discriminator()
-generator_optimizer = tf.keras.optimizers.Adam(learning_rate=0.0002, beta_1=0.5, beta_2=0.999, epsilon=1e-7)
-discriminator_optimizer = tf.keras.optimizers.Adam(learning_rate=0.0002, beta_1=0.5, beta_2=0.999, epsilon=1e-7)
+discriminator = build_discriminator()
+generator_optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.999, epsilon=1e-7)
+discriminator_optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.999, epsilon=1e-7)
 
 checkpoint_dir = './training_checkpoints'
 checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
@@ -31,6 +41,9 @@ checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
                                  discriminator_optimizer=discriminator_optimizer,
                                  generator=generator,
                                  discriminator=discriminator)
+
+
+
 
 @tf.function
 def train_step(images):
@@ -42,14 +55,19 @@ def train_step(images):
         real_out = discriminator(images, training=True)
         fake_out = discriminator(generated_images, training=True)
 
-        gen_loss = loss.generator_loss_renyiL1(fake_out, alpha=0.5)
+        gen_loss = loss.generator_loss_original(fake_out)
         disc_loss = loss.discriminator_loss_original(real_out,fake_out)
+
+        #gen_loss = loss.generator_loss_renyiL1(fake_out, alpha_g)
+        #disc_loss = loss.discriminator_loss_renyi(real_out,fake_out, alpha_d)
         # this is printing all the red numbers and will show 'nan' if broken
-        tf.print(disc_loss, gen_loss)
     gen_gradients = gen_tape.gradient(gen_loss, generator.trainable_variables)
-    disc_graddients = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
+    disc_gradients = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
     generator_optimizer.apply_gradients(zip(gen_gradients, generator.trainable_variables))
-    discriminator_optimizer.apply_gradients(zip(disc_graddients, discriminator.trainable_variables))
+    discriminator_optimizer.apply_gradients(zip(disc_gradients, discriminator.trainable_variables))
+    tf.print(disc_loss, gen_loss, real_out, fake_out)
+    
+
 
 def train(dataset, epochs):
     for epoch in range(epochs):

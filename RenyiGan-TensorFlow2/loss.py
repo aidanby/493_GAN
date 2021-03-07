@@ -29,11 +29,23 @@ def generator_loss_renyiL1(fake_output, alpha):
     return gen_loss
 
 def discriminator_loss_renyi(real_output, fake_output, alpha):
-    f = (tf.math.pow(real_output, alpha) * \
-         tf.math.pow(fake_output, (1.0 - alpha)) + \
-        tf.math.pow((1.0 - real_output), alpha) * \
-        tf.math.pow((1.0 - fake_output), (1.0 - alpha))) / \
-        (tf.math.pow(real_output, alpha) +
-         tf.math.pow((1.0 - real_output), alpha))
-    loss = tf.math.reduce_mean(1.0 / (alpha - 1.0) * tf.math.log(f))
+
+
+    n1 = (tf.math.pow(real_output, alpha * tf.ones_like(real_output)))*(tf.math.pow(fake_output, 1.0 - alpha * tf.ones_like(real_output)))
+    n2 = (tf.math.pow(1-real_output, alpha * tf.ones_like(real_output)))*(tf.math.pow(1-fake_output, 1.0 - alpha * tf.ones_like(real_output)))
+    n = n1 + n2
+
+    d1 = tf.math.pow(real_output, alpha * tf.ones_like(real_output))
+    d2 = tf.math.pow(1-real_output, alpha * tf.ones_like(real_output))
+    d = d1 + d2
+
+    loss = tf.math.reduce_mean(((1/(alpha-1))*tf.math.log((n/(d) + 1e-8))))
+
+    # f = (tf.math.pow(real_output, alpha) * \
+    #      tf.math.pow(fake_output, (1.0 - alpha)) + \
+    #     tf.math.pow((1.0 - real_output), alpha) * \
+    #     tf.math.pow((1.0 - fake_output), (1.0 - alpha))) / \
+    #     (tf.math.pow(real_output, alpha) +
+    #      tf.math.pow((1.0 - real_output), alpha))
+    # loss = tf.math.reduce_mean(1.0 / (alpha - 1.0) * tf.math.log(f))
     return loss
