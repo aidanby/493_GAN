@@ -56,8 +56,10 @@ def train_step(images):
         fake_out = discriminator(generated_images, training=True)
 
         gen_loss = loss.generator_loss_original(fake_out)
-        disc_loss = loss.discriminator_loss_original(real_out,fake_out)
-
+#         disc_loss = loss.discriminator_loss_original(real_out,fake_out)
+        disc_loss1 = loss.discriminator_loss_renyi1(real_out, alpha = 0.1)
+        disc_loss2 = loss.discriminator_loss_renyi0(fake_out, alpha = 0.1)
+        disc_loss = disc_loss2 + disc_loss1
         #gen_loss = loss.generator_loss_renyiL1(fake_out, alpha_g)
         #disc_loss = loss.discriminator_loss_renyi(real_out,fake_out, alpha_d)
         # this is printing all the red numbers and will show 'nan' if broken
