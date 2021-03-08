@@ -49,3 +49,18 @@ def discriminator_loss_renyi(real_output, fake_output, alpha):
     #      tf.math.pow((1.0 - real_output), alpha))
     # loss = tf.math.reduce_mean(1.0 / (alpha - 1.0) * tf.math.log(f))
     return loss
+def discriminator_loss_renyi1(real_output, alpha):
+    f = (((tf.math.pow(1.0, alpha) *
+         tf.math.pow(real_output, (1.0 - alpha)))) /
+        (tf.math.pow(1.0, alpha)))
+    disc_loss = tf.math.reduce_mean((1.0 / (alpha - 1.0)) * tf.math.log(f))
+    return disc_loss
+
+def discriminator_loss_renyi0(fake_output, alpha):
+    f = ((tf.math.pow((1.0), alpha) *
+          tf.math.pow((1.0 - fake_output), (1.0 - alpha))) /
+         (tf.math.pow((1.0), alpha)))
+    disc_loss = tf.math.reduce_mean((1.0 / (alpha - 1.0)) * tf.math.log(f))
+    return disc_loss
+
+
