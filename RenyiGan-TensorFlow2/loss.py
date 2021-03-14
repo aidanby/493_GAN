@@ -28,6 +28,11 @@ def generator_loss_renyiL1(fake_output, alpha):
     gen_loss = tf.math.abs(1.0 / (alpha - 1) * tf.math.log(f + 1e-8) + tf.math.log(2.0))
     return gen_loss
 
+def generator_loss_rgan(fake_output, alpha):
+    f = tf.math.pow((fake_output), (1.0 - alpha))
+    gen_loss = tf.math.reduce_mean((1.0 / (alpha - 1.0)) * tf.math.log(f))
+    return gen_loss
+
 def discriminator_loss_renyi(real_output, fake_output, alpha):
 
 
