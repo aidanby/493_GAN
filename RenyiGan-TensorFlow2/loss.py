@@ -33,18 +33,27 @@ def generator_loss_rgan(fake_output, alpha):
     gen_loss = tf.math.reduce_mean((1.0 / (alpha - 1.0)) * tf.math.log(f))
     return gen_loss
 
-def discriminator_loss_renyi(real_output, fake_output, alpha):
+def discriminator_loss_rgan(real_output, fake_output, alpha):
+    f1 = (((tf.math.pow(1.0, alpha) *
+         tf.math.pow(real_output, (1.0 - alpha)))) /
+        (tf.math.pow(1.0, alpha)))
+    disc_loss1 = tf.math.reduce_mean((1.0 / (alpha - 1.0)) * tf.math.log(f1))
 
+    f2 = ((tf.math.pow((1.0), alpha) *
+          tf.math.pow((1.0 - fake_output), (1.0 - alpha))) /
+         (tf.math.pow((1.0), alpha)))
+    disc_loss2 = tf.math.reduce_mean((1.0 / (alpha - 1.0)) * tf.math.log(f2))
+    return disc_loss1 + disc_loss2
 
-    n1 = (tf.math.pow(real_output, alpha * tf.ones_like(real_output)))*(tf.math.pow(fake_output, 1.0 - alpha * tf.ones_like(real_output)))
-    n2 = (tf.math.pow(1-real_output, alpha * tf.ones_like(real_output)))*(tf.math.pow(1-fake_output, 1.0 - alpha * tf.ones_like(real_output)))
-    n = n1 + n2
+    # n1 = (tf.math.pow(real_output, alpha * tf.ones_like(real_output)))*(tf.math.pow(fake_output, 1.0 - alpha * tf.ones_like(real_output)))
+    # n2 = (tf.math.pow(1-real_output, alpha * tf.ones_like(real_output)))*(tf.math.pow(1-fake_output, 1.0 - alpha * tf.ones_like(real_output)))
+    # n = n1 + n2
 
-    d1 = tf.math.pow(real_output, alpha * tf.ones_like(real_output))
-    d2 = tf.math.pow(1-real_output, alpha * tf.ones_like(real_output))
-    d = d1 + d2
+    # d1 = tf.math.pow(real_output, alpha * tf.ones_like(real_output))
+    # d2 = tf.math.pow(1-real_output, alpha * tf.ones_like(real_output))
+    # d = d1 + d2
 
-    loss = tf.math.reduce_mean(((1/(alpha-1))*tf.math.log((n/(d) + 1e-8))))
+    # loss = tf.math.reduce_mean(((1/(alpha-1))*tf.math.log((n/(d) + 1e-8))))
 
     # f = (tf.math.pow(real_output, alpha) * \
     #      tf.math.pow(fake_output, (1.0 - alpha)) + \
@@ -53,19 +62,18 @@ def discriminator_loss_renyi(real_output, fake_output, alpha):
     #     (tf.math.pow(real_output, alpha) +
     #      tf.math.pow((1.0 - real_output), alpha))
     # loss = tf.math.reduce_mean(1.0 / (alpha - 1.0) * tf.math.log(f))
-    return loss
-def discriminator_loss_renyi1(real_output, alpha):
-    f = (((tf.math.pow(1.0, alpha) *
-         tf.math.pow(real_output, (1.0 - alpha)))) /
-        (tf.math.pow(1.0, alpha)))
-    disc_loss = tf.math.reduce_mean((1.0 / (alpha - 1.0)) * tf.math.log(f))
-    return disc_loss
+# def discriminator_loss_renyi1(real_output, alpha):
+#     f = (((tf.math.pow(1.0, alpha) *
+#          tf.math.pow(real_output, (1.0 - alpha)))) /
+#         (tf.math.pow(1.0, alpha)))
+#     disc_loss = tf.math.reduce_mean((1.0 / (alpha - 1.0)) * tf.math.log(f))
+#     return disc_loss
 
-def discriminator_loss_renyi0(fake_output, alpha):
-    f = ((tf.math.pow((1.0), alpha) *
-          tf.math.pow((1.0 - fake_output), (1.0 - alpha))) /
-         (tf.math.pow((1.0), alpha)))
-    disc_loss = tf.math.reduce_mean((1.0 / (alpha - 1.0)) * tf.math.log(f))
-    return disc_loss
+# def discriminator_loss_renyi0(fake_output, alpha):
+#     f2 = ((tf.math.pow((1.0), alpha) *
+#           tf.math.pow((1.0 - fake_output), (1.0 - alpha))) /
+#          (tf.math.pow((1.0), alpha)))
+#     disc_loss2 = tf.math.reduce_mean((1.0 / (alpha - 1.0)) * tf.math.log(f2))
+#     return disc_loss
 
 

@@ -14,7 +14,7 @@ from model import get_generator, get_discriminator, build_generator, build_discr
 
 BUFFER_SIZE = 60000
 BATCH_SIZE = 100
-EPOCHS = 250
+EPOCHS = 10
 test_size = 10000
 
 alpha_g = 0.1
@@ -28,9 +28,11 @@ trial = 1
 noise_dim = 28*28
 num_examples_to_generate = 16
 seed = tf.random.normal([num_examples_to_generate, noise_dim])
-(dataset, real_mu, real_sigma) = data.load_mnist(BUFFER_SIZE, BATCH_SIZE)
-generator = build_generator()
-discriminator = build_discriminator()
+
+
+(dataset, real_mu, real_sigma) = data.load_mnist(BUFFER_SIZE, BATCH_SIZE) #ADD to train function
+generator = build_generator()  #Add to build function
+discriminator = build_discriminator() #Add to build function
 generator_optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.999, epsilon=1e-7)
 discriminator_optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.999, epsilon=1e-7)
 
