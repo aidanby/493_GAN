@@ -2,8 +2,8 @@
 
 import tensorflow as tf
 
-
-def generator_loss_original(fake_output):
+#Alpha does nothing in this function, just there to make things easier
+def generator_loss_original(fake_output, alpha):
     cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     return cross_entropy(tf.ones_like(fake_output), fake_output)
 

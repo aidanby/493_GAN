@@ -1,0 +1,8 @@
+Version Descriptions
+
+Version 1: renyi generator, rgan discriminator
+Version 2: renyi l1 generator, rgan discriminator
+Version 3: vanilla generator, Rgan discriminator
+Version 4: rgan generator, rgan discriminator
+
+rgan generator, vanilla generator????

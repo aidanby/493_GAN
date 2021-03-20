@@ -13,7 +13,7 @@ class GAN(object):
     def  __init__(self, alpha_g, alpha_d, trial, version):
         self.BUFFER_SIZE = 60000
         self.BATCH_SIZE = 100
-        self.EPOCHS = 10
+        self.EPOCHS = 250
         self.test_size = 10000
         self.alpha_g = alpha_g
         self.alpha_d = alpha_d
@@ -47,6 +47,23 @@ class GAN(object):
         self.make_directory(self.image_dir)
         self.make_directory(self.plot_dir)
 
+        if (version == 1):
+            self.generator_loss = loss.generator_loss_renyi
+            self.discriminator_loss = loss.discriminator_loss_rgan
+        elif (version == 2):
+            self.generator_loss = loss.generator_loss_renyiL1
+            self.discriminator_loss = loss.discriminator_loss_rgan
+        elif (version == 3):
+            self.generator_loss = loss.generator_loss_original
+            self.discriminator_loss = loss.discriminator_loss_rgan
+        elif(version == 4):
+            self.generator_loss = loss.generator_loss_rgan
+            self.discriminator_loss = loss.discriminator_loss_rgan
+        else:
+            quit()
+        
+
+
     
     @staticmethod
     def make_directory(PATH):
@@ -63,12 +80,11 @@ class GAN(object):
             real_out = self.discriminator(images, training=True)
             fake_out = self.discriminator(generated_images, training=True)
 
-            #gen_loss = loss.generator_loss_original(fake_out)
-            #disc_loss = loss.discriminator_loss_original(real_out,fake_out)
+            # disc_loss = loss.discriminator_loss_rgan(real_out,fake_out, self.alpha_d)
+            # gen_loss = loss.generator_loss_rgan(fake_out, self.alpha_g)
 
-            #gen_loss = loss.generator_loss_renyiL1(fake_out, alpha_g)
-            disc_loss = loss.discriminator_loss_rgan(real_out,fake_out, self.alpha_d)
-            gen_loss = loss.generator_loss_rgan(fake_out, self.alpha_g)
+            disc_loss = self.discriminator_loss(real_out,fake_out, self.alpha_d)
+            gen_loss = self.generator_loss(fake_out, self.alpha_g)
 
 
         # this is printing all the red numbers and will show 'nan' if broken
@@ -178,9 +194,10 @@ class GAN(object):
 
 
 
-t = [1, 2]
-a_g = [3, 0.1]
-a_d = [3, 0.1]  
+t = [1, 2,3, 4, 5, 6, 7, 8, 9, 10]
+v = [1]
+a_g = [3, 9]
+a_d = [0.5, 0.1]  
 
 for x in t:
     for y in a_g:
