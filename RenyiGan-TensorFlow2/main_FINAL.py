@@ -201,14 +201,13 @@ class GAN(object):
 
 
 
-t = [1, 2,3, 4, 5, 6, 7, 8, 9, 10]
-v = [1]
+t = [9, 10]
+v = 2
 a_g = [3, 9]
-a_d = [0.5, 0.1]  
+a_d = [0.5, 0.1]
 
 for x in t:
     for y in a_g:
         for z in a_d:
-
-            model = GAN(y, z, x, 1)
+            model = GAN(y, z, x, v)
             model.train()
